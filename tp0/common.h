@@ -1,11 +1,15 @@
-#include <vector>
+#include <set>
+#include "Eigen/Dense"
+using Eigen::MatrixXd;
+using Eigen::VectorXd;
 using namespace std;
+
+#define dprint(v) cout << #v"=" << (v) << endl
+#define SQ(x) ((x)*(x))
 
 void set_rand_seed();
 
 double rnd_uniform(double m, double M);
-
-#define SQ(x) ((x)*(x))
 
 extern const double EPS;
 
@@ -13,23 +17,21 @@ double normal_distribution(double x, double u, double sigma);
 
 double rnd_normal(double u, double sigma);
 
-double mean(vector<double> x);
+VectorXd mean(const MatrixXd &x);
 
-double variance(vector<double> x);
+VectorXd variance(const MatrixXd &x);
 
-vector<double> rnd_normal_vec(int n, double u, double sigma);
+VectorXd rnd_normal_vec(VectorXd u, VectorXd sigma);
 
-
-struct SampleBinaryClassifier{
-    vector<double> input;
-    int output;
-    SampleBinaryClassifier() {}
-    SampleBinaryClassifier(vector<double> input, int output):input(input), output(output) {}
+struct DatasetClassifier{
+    MatrixXd input;
+    VectorXd output;
+    DatasetClassifier(){}
+    DatasetClassifier(int n, int d):input(n, d), output(n) {}
+    DatasetClassifier(const char *file);
+    set<double> classes();
+    void save_names(const char *file);
+    void save_data(const char *file);
+    MatrixXd filter_by_class(double which);
 };
-typedef vector<SampleBinaryClassifier> DatasetBinaryClassifier;
 
-void save_names_binary_classifier(const char *file, int d);
-
-void save_data_binary_classifier(const char *file, const DatasetBinaryClassifier &dataset);
-
-DatasetBinaryClassifier read_data_binary_classifier(const char *file);

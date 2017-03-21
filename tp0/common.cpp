@@ -1,9 +1,12 @@
 #include <cmath>
 #include <ctime>
 #include <cassert>
+#include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include "common.h"
+using Eigen::Map;
 using namespace std;
 
 const double EPS=1e-9;
@@ -20,84 +23,121 @@ double rnd_uniform(double m, double M){
 
 double normal_distribution(double x, double u, double sigma){
 	assert(abs(sigma)>EPS);
-	return exp(-0.5*SQ((x-u)/sigma))/(sqrt(2*M_PI)*sigma);
+	return exp(-0.5*SQ((x-u)/(2*sigma*sigma)))/(sqrt(2*M_PI)*sigma);
 }
 
 double rnd_normal(double u, double sigma){
 	assert(abs(sigma)>EPS);
-	double y,x;
-	do{
-		y = rnd_uniform(0, 1/(sqrt(2*M_PI)*sigma));
-		x = rnd_uniform(u-5*sigma, u+5*sigma);
-	} while(normal_distribution(x, u, sigma)>=y);
-	return x;
+    // Acceptance-Rejection Method by Karl Sigman
+    // http://www.columbia.edu/~ks20/4703-Sigman/4703-07-Notes-ARM.pdf
+    double y1, y2;
+    do{
+        y1 = -log(rnd_uniform(0, 1));
+        y2 = -log(rnd_uniform(0, 1));
+    }while(y2*2<SQ(y1-1));
+    double S=rand()%2?-1:1;
+    double Z=S*abs(y1);
+    return sigma*Z+u;
+    
+    //Not working Method
+	//~ double y,x;
+	//~ do{
+		//~ y = rnd_uniform(0, 1/(sqrt(2*M_PI)*sigma));
+		//~ x = rnd_uniform(u-5*sigma, u+5*sigma);
+	//~ } while(normal_distribution(x, u, sigma)>=y);
+	//~ return x;
 }
 
-double mean(vector<double> x){
+VectorXd mean(const MatrixXd &x){
 	assert(x.size());
-	double sum=0;
-	for(vector<double>::iterator it=x.begin(); it!=x.end(); ++it)
-		sum+=*it;
-	return sum/x.size();
+    return x.colwise().mean();
 }
 
-double variance(vector<double> x){
+VectorXd variance(const MatrixXd &x){
 	assert(x.size());
-	double u=mean(x);
-	double sum=0;
-	for(vector<double>::iterator it=x.begin(); it!=x.end(); ++it)
-		sum+=SQ(*it-u);
-	return sum/x.size();
+    MatrixXd centered= (x.rowwise() - x.colwise().mean());
+    MatrixXd r=(centered.cwiseProduct(centered)).colwise().mean();
+    return Map<VectorXd>(r.data(), r.size());
 }
 
-vector<double> rnd_normal_vec(int n, double u, double sigma){
-	assert(n>=0);
-	assert(abs(sigma)>EPS);
-	vector<double> r(n);
-	for(int i=0; i<n; i++)
-		r[i]=rnd_normal(u, sigma);
-	return r;
+VectorXd rnd_normal_vec(VectorXd u, VectorXd sigma){
+    int n=u.size();
+	VectorXd r(n);
+	for(int i=0; i<n; i++){
+        assert(abs(sigma(i))>EPS);
+		r(i)=rnd_normal(u(i), sigma(i));
+	}
+    return r;
 }
 
-void save_names_binary_classifier(const char *file, int d){
+void DatasetClassifier::save_names(const char *file){
     ofstream f(file);
     f << "0,1." << endl;
     f << endl;
-    for(int i=1; i<=d; i++){
+    for(int i=1; i<=input.cols(); i++)
         f << "x" << i << ": continuous." << endl;
-    }
 }
 
-void save_data_binary_classifier(const char *file, const DatasetBinaryClassifier &dataset){
+void DatasetClassifier::save_data(const char *file){
     ofstream f(file);
-    for(unsigned i=0; i<dataset.size(); i++){
-        for(unsigned j=0; j<dataset[i].input.size(); j++){
-            f << (j?", ":"") << dataset[i].input[j]; 
+    for(unsigned i=0; i<input.rows(); i++){
+        for(unsigned j=0; j<input.cols(); j++){
+            f << (j?", ":"") << input(i, j); 
         }
-        if(dataset[i].input.size()) f << ", ";
-        f << dataset[i].output << endl;
+        if(input.cols()) f << ", ";
+        f << output(i) << endl;
     }
 }
 
-
-DatasetBinaryClassifier read_data_binary_classifier(const char *file){
-    DatasetBinaryClassifier dataset;
+DatasetClassifier::DatasetClassifier(const char *file){
     ifstream f(file);
     string line;
+    int lastd=-1;
+    vector<vector<double> > inputs;
+    vector<double> outputs;
     while(getline(f, line)){
         int d=0;
         for(unsigned i=0; i<line.size(); i++) if(line[i]==',') d++;
         if(d){
-            SampleBinaryClassifier s(vector<double>(d), 0);
+            if(lastd==-1) lastd=d;
+            else assert(lastd==d);
+            vector<double> s_input(d);
             stringstream ss(line);
             for(int i=0; i<d; i++){
-                ss >> s.input[i];
+                ss >> s_input[i];
                 ss.ignore();//ignora la ,
             }
-            ss >> s.output;
-            dataset.push_back(s);
+            inputs.push_back(s_input);
+            double s_output;
+            ss >> s_output;
+            outputs.push_back(s_output);
         }
     }
-    return dataset;
+    assert(lastd>0);
+    input=MatrixXd(inputs.size(), lastd);
+    output=VectorXd(inputs.size());
+    for(unsigned i=0; i<inputs.size(); i++)
+        input.row(i)=Map<VectorXd>(inputs[i].data(), inputs[i].size());
+    output=Map<VectorXd>(outputs.data(), outputs.size());
 }
 
+set<double> DatasetClassifier::classes(){
+    set<double> s;
+    for(int i=0; i<output.size(); i++)
+        s.insert(output(i));
+    return s;
+}
+
+MatrixXd DatasetClassifier::filter_by_class(double which){
+    int n=0;
+    for(int i=0; i<output.size(); i++)
+        if(abs(which-output(i))<EPS) n++;
+    MatrixXd filtered(n, input.cols());
+    int q=0;
+    for(int i=0; i<output.size(); i++){
+        if(abs(which-output(i))<EPS){
+            filtered.row(q++)=input.row(i);
+        }
+    }
+    return filtered;
+}

@@ -17,18 +17,22 @@ double norm(const vector<double> &x){
     return sqrt(r);
 }
 
-void print_vec(const vector<double> &x){
+void print_vec(const VectorXd &x){
     cout << "(";
     for(unsigned i=0; i<x.size(); i++)
-        cout << (i?", ":"") << x[i];
+        cout << (i?", ":"") << x(i);
     cout << ")";
 }
-void print_stats(int samples, const vector<double> &mean, double var){
+void print_stats(int samples, const VectorXd &mean, const VectorXd &var){
     cout << "\tsamples = " << samples << endl;
     cout << "\tmean = ";
     print_vec(mean);
     cout << endl;
-    cout << "\tvariance = " << var << endl;
+    cout << "\tvariance = ";
+    print_vec(var);
+    cout << endl;
+    cout << "\tdesviacion estandar = ";
+    print_vec(var.cwiseAbs().cwiseSqrt());
     cout << endl;
 }
 
@@ -45,40 +49,25 @@ int main(int argc, char *argv[]){
 	
 	//Read data
     string data=prefix+".data";
-    DatasetBinaryClassifier dataset=read_data_binary_classifier(data.c_str());
-    int n=dataset.size();
+    DatasetClassifier dataset(data.c_str());
+    int n=dataset.input.rows();
 	assert(n>0);
-    int d=dataset[0].input.size();
+    int d=dataset.input.cols();
 	assert(d>0);
     
 	//Analyze data
-    map<int, vector<double> > u_class;
-    map<int, int > n_class;
-    for(int i=0; i<n; i++){
-        n_class[dataset[i].output]++;
-        u_class[dataset[i].output]=vector<double>(d, 0);
-    }
-    
-    vector<double> u(d, 0);
-    for(int j=0; j<d; j++){
-        for(int i=0; i<n; i++){
-            u[j]+=dataset[i].input[j];
-            u_class[dataset[i].output][j]+=dataset[i].input[j];
-        }
-        u[j]/=n;
-        for(map<int, vector<double> >::iterator it=u_class.begin(); it!=u_class.end(); ++it)
-            it->second[j]/=n_class[it->first];
-    }
-    
-    //Print results
+    VectorXd u=mean(dataset.input);
+    VectorXd var=variance(dataset.input);
     cout << "Dataset: " << endl;
-    print_stats(n, u, 0);
+    print_stats(n, u, var);
     
-    for(map<int, int>::iterator it=n_class.begin(); it!=n_class.end(); ++it){
-        cout << "Clase " << it->first << ":" << endl;
-        print_stats(it->second, u_class[it->first], 0);
+    for(auto it: dataset.classes()){
+        cout << "Clase " << round(it) << ":" << endl;
+        MatrixXd clase=dataset.filter_by_class(it);
+        VectorXd u=mean(clase);
+        VectorXd var=variance(clase);
+        print_stats(clase.rows(), u, var);
     }
-    
     
 	return 0;
 }
