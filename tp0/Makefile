@@ -1,4 +1,4 @@
-CPPFLAGS=-std=c++11 -O3 -g -I.
+CPPFLAGS=-std=c++11 -O3 -I.
 all: eja ejb ejc datasets analyze_dataset
 
 eja: eja/eja.o common.o common.h
@@ -10,16 +10,22 @@ ejb: ejb/ejb.o common.o common.h
 ejc: ejc/ejc.o common.o common.h
 	$(CXX) $(LDFLAGS) -o $@/$@ $(filter %.o, $^) $(LDLIBS) 
 	
-ejb/ejb.data ejb/ejb.names: ejb
-	./ejb/ejb 2 200 0.75 ejb/ejb
+eja/eja_200.data eja/eja_200.names: eja
+	./eja/eja 2 200 0.75 eja/eja_200
 	
-eja/eja.data eja/eja.names: eja
-	./eja/eja 2 200 0.75 eja/eja
+ejb/ejb_200.data ejb/ejb_200.names: ejb
+	./ejb/ejb 2 200 0.75 ejb/ejb_200
 	
-ejc/ejc.data ejc/ejc.names: ejc
-	./ejc/ejc 10000 ejc/ejc
+eja/eja_400.data eja/eja_400.names: eja
+	./eja/eja 4 400 2.0 eja/eja_400
 
-datasets: eja/eja.data ejb/ejb.data ejc/ejc.data
+ejb/ejb_400.data ejb/ejb_400.names: ejb
+	./ejb/ejb 4 400 2.0 ejb/ejb_400
+
+ejc/ejc.data ejc/ejc.names: ejc
+	./ejc/ejc 3000 ejc/ejc
+
+datasets: eja/eja_200.data ejb/ejb_200.data eja/eja_400.data ejb/ejb_400.data ejc/ejc.data
 	
 analyze_dataset: analyze_dataset.o common.o common.h
 	$(CXX) $(LDFLAGS) -o $@ $(filter %.o, $^) $(LDLIBS)

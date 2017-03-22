@@ -40,8 +40,7 @@ int main(int argc, char *argv[]){
         double x=ro*cos(theta);
         double y=ro*sin(theta);
         int p=left[0]+left[1]-1;
-        dataset.input(p, 0) = x;
-        dataset.input(p, 1) = y;
+        dataset.input.row(p) << x, y;
         dataset.output(p) = clase;
         left[clase]--;
     }
