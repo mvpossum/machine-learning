@@ -1,7 +1,6 @@
 #include <cmath>
 #include <ctime>
 #include <cassert>
-#include <vector>
 #include <fstream>
 #include <sstream>
 #include <iostream>
@@ -70,12 +69,19 @@ VectorXd rnd_normal_vec(VectorXd u, VectorXd sigma){
     return r;
 }
 
-void DatasetClassifier::save_names(const char *file){
+void DatasetClassifier::save_names(const char *file, vector<string> names){
     ofstream f(file);
     f << "0,1." << endl;
     f << endl;
-    for(int i=1; i<=input.cols(); i++)
-        f << "x" << i << ": continuous." << endl;
+    if(names.size()){
+        assert(names.size()==input.cols());
+        for(auto it: names)
+            f << it << ": continuous." << endl;
+    }
+    else{
+        for(int i=1; i<=input.cols(); i++)
+            f << "x" << i << ": continuous." << endl;
+    }
 }
 
 void DatasetClassifier::save_data(const char *file){

@@ -1,4 +1,6 @@
+#include <string>
 #include <set>
+#include <vector>
 #include "Eigen/Dense"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -30,7 +32,7 @@ struct DatasetClassifier{
     DatasetClassifier(int n, int d):input(n, d), output(n) {}
     DatasetClassifier(const char *file);
     set<double> classes();
-    void save_names(const char *file);
+    void save_names(const char *file, vector<string> names=vector<string>());
     void save_data(const char *file);
     MatrixXd filter_by_class(double which);
 };

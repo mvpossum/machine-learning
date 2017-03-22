@@ -5,7 +5,7 @@
 #include <vector>
 #include <cassert>
 #include <string>
-#include "common.h"
+#include "../common.h"
 using namespace std;
 
 int main(int argc, char *argv[]){
