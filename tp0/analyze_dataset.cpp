@@ -10,30 +10,11 @@
 #include "common.h"
 using namespace std;
 
-double norm(const vector<double> &x){
-    double r=0;
-    for(unsigned i=0; i<x.size(); i++)
-        r+=SQ(x[i]);
-    return sqrt(r);
-}
-
-void print_vec(const VectorXd &x){
-    cout << "(";
-    for(unsigned i=0; i<x.size(); i++)
-        cout << (i?", ":"") << x(i);
-    cout << ")";
-}
 void print_stats(int samples, const VectorXd &mean, const VectorXd &var){
     cout << "\tsamples = " << samples << endl;
-    cout << "\tmean = ";
-    print_vec(mean);
-    cout << endl;
-    cout << "\tvariance = ";
-    print_vec(var);
-    cout << endl;
-    cout << "\tdesviacion estandar = ";
-    print_vec(var.cwiseAbs().cwiseSqrt());
-    cout << endl;
+    cout << "\tmean = " << mean.transpose() << endl;
+    cout << "\tvariance = " << var.transpose() << endl;
+    cout << "\tdesviacion estandar = " << var.cwiseAbs().cwiseSqrt().transpose() << endl;
 }
 
 int main(int argc, char *argv[]){
@@ -60,13 +41,15 @@ int main(int argc, char *argv[]){
     VectorXd var=variance(dataset.input);
     cout << "Dataset: " << endl;
     print_stats(n, u, var);
+    cout << endl;
     
     for(auto it: dataset.classes()){
-        cout << "Clase " << round(it) << ":" << endl;
         MatrixXd clase=dataset.filter_by_class(it);
         VectorXd u=mean(clase);
         VectorXd var=variance(clase);
+        cout << "Clase " << round(it) << ":" << endl;
         print_stats(clase.rows(), u, var);
+        cout << endl;
     }
     
 	return 0;
