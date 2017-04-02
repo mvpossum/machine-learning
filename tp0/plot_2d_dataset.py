@@ -30,6 +30,20 @@ df = pd.DataFrame(dict(X=x, Y=y, clase=clase))
 lm = sns.lmplot('X', 'Y', data=df, hue='clase', markers='o', palette="Set1", aspect=1, legend=False, fit_reg=False, scatter_kws={"s": 15} )
 ax = lm.axes[0,0]
 ax.set_aspect('equal')
-#~ ax.set_ylim(0,)
+
+#~ LIMI=1.1
+#~ ax.set_ylim(-LIMI,LIMI)
+#~ ax.set_xlim(-LIMI,LIMI)
+
+ax.xaxis.set_visible(False)
+ax.yaxis.set_visible(False)
+ax.set_frame_on(False) #Remove both axes
+
+plt.savefig(PREFIX+'.png', bbox_inches='tight', pad_inches=0)
+
+ax.xaxis.set_visible(True)
+ax.yaxis.set_visible(True)
+ax.set_frame_on(True) #Remove both axes
 
 plt.show()
+
