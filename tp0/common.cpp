@@ -22,7 +22,8 @@ double rnd_uniform(double m, double M){
 
 double normal_distribution(double x, double u, double sigma){
 	assert(abs(sigma)>EPS);
-	return exp(-0.5*SQ((x-u)/(2*sigma*sigma)))/(sqrt(2*M_PI)*sigma);
+    double v = (x-u)/sigma;
+	return exp(-0.5*SQ(v))/(sqrt(2*M_PI)*sigma);
 }
 
 double rnd_normal(double u, double sigma){

@@ -12,9 +12,10 @@ using namespace std;
 
 void print_stats(int samples, const VectorXd &mean, const VectorXd &var){
     cout << "\tsamples = " << samples << endl;
-    cout << "\tmean = " << mean.transpose() << endl;
-    cout << "\tvariance = " << var.transpose() << endl;
-    cout << "\tdesviacion estandar = " << var.cwiseAbs().cwiseSqrt().transpose() << endl;
+    cout << "\tmean = " << mean.transpose() << " (" << mean.mean() << ")" << endl;
+    cout << "\tvariance = " << var.transpose() << " (" << var.mean() << ")" << endl;
+    VectorXd sigma = var.cwiseAbs().cwiseSqrt();
+    cout << "\tdesviacion estandar = " << sigma.transpose() << " (" << sigma.mean() << ")" << endl;
 }
 
 int main(int argc, char *argv[]){

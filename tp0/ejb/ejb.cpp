@@ -14,7 +14,7 @@ int main(int argc, char *argv[]){
 		cout << "Usage: " << argv[0] << " <d> <n> <C> <out_name>" << endl;
 		cout << "\td = Dimension del output" << endl; 
 		cout << "\tn = Cantidad de puntos" << endl; 
-		cout << "\tC = Varianza de los datos (sigma = C)" << endl; 
+		cout << "\tC = Varianza de los datos (sigma = C*sqrt(d))" << endl; 
 		cout << "\tout_name = Nombre del dataset" << endl; 
 		return 1;
 	}
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     
     VectorXd u=VectorXd::Zero(d);
     u(0)=1;
-    VectorXd var=VectorXd::Constant(d, C);
+    VectorXd var=VectorXd::Constant(d, C*sqrt(d));
 	for(int i=0; i<n/2; i++)
 		dataset.input.row(perm[i])=rnd_normal_vec(u, var), dataset.output(perm[i])=1;
     u(0)=-1;
