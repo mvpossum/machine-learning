@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
     
     VectorXd u=VectorXd::Zero(d);
     u(0)=1;
-    VectorXd var=VectorXd::Constant(d, C*sqrt(d));
+    VectorXd var=VectorXd::Constant(d, C);
 	for(int i=0; i<n/2; i++)
 		dataset.input.row(perm[i])=rnd_normal_vec(u, var), dataset.output(perm[i])=1;
     u(0)=-1;
