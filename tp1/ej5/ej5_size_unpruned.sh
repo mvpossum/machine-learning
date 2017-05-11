@@ -14,7 +14,7 @@ echo Generando tabla para ${table_name}...
 for n in $SIZES; do
     printf '\r'$n >&0
     printf $n\ 
-    for col in {1,3}; do
+    for col in {1,9}; do
         avg $col < stats$n.txt
     done
     echo
