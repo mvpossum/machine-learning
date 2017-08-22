@@ -1,0 +1,22 @@
+#!/bin/bash
+
+DATASET=espirales
+TMPD=${DATASET}_tmp
+    
+../../tp0/ejc/ejc 2000 $DATASET
+mv espirales.data $DATASET.test
+../../tp0/ejc/ejc 2000 $DATASET
+
+seeds=(673142 456439 311112 311112 311112)
+
+i=0
+for n2 in {2,5,10,20,40}; do
+    echo N2=${n2}...
+    ../alter_net ${DATASET}.net ${DATASET}_${n2}.net N2=$n2 SEED=${seeds[$i]}
+    ln -sf $DATASET.data ${DATASET}_${n2}.data
+    ln -sf $DATASET.test ${DATASET}_${n2}.test
+    ../bp ${DATASET}_${n2}
+    ../discretiza ${DATASET}_${n2}
+    ../plot_2d_dataset.py ${DATASET}_${n2}.predic.d
+    ((var++))
+done

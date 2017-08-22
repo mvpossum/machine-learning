@@ -31,5 +31,6 @@ def proc_line(line):
 test_size, test_error, test_size_prunned, test_error_prunned = tests_stats = proc_line(test_line)
 train_size, train_error, train_size_prunned, train_error_prunned = train_stats = proc_line(train_line)
 
-print(test_size, test_error, test_size_prunned, test_error_prunned, end=' ')
-print(train_size, train_error, train_size_prunned, train_error_prunned, end=' ')
+#~ print(test_size, test_error, test_size_prunned, test_error_prunned, end=' ')
+#~ print(train_size, train_error, train_size_prunned, train_error_prunned, end=' ')
+print(test_error)
